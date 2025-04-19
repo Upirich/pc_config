@@ -1,0 +1,328 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.search-results {
+  margin-top: 2rem;
+}
+
+.parts-grid, .builds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.no-results {
+  text-align: center;
+  grid-column: 1 / -1;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #aaa;
+}
+
+.popular-builds h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .parts-grid, .builds-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+/* Header Styles */
+.header {
+  background-color: #222;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+  background-color: #444;
+}
+
+/* Search Bar Styles */
+.search-bar {
+  display: flex;
+  margin: 1rem 0;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 1rem;
+}
+
+.search-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: #45a049;
+}
+
+/* Card Styles */
+.build-card, .part-card {
+  background-color: #444;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.build-card:hover, .part-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.build-card h3, .part-card h3 {
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.build-description {
+  color: #bbb;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.build-details, .part-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.build-price, .part-price {
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.build-rating {
+  color: #FFD700;
+}
+
+.part-category {
+  background-color: #555;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.part-rating {
+  margin-bottom: 1rem;
+  color: #FFD700;
+}
+
+.build-parts h4 {
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.build-parts ul {
+  list-style-type: none;
+  margin-bottom: 1rem;
+}
+
+.build-parts li {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.edit-button, .add-to-build {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #666;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.edit-button:hover, .add-to-build:hover {
+  background-color: #555;
+}
+
+/* Filter Panel Styles */
+.filter-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  background-color: #444;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.filter-group select, .filter-group input {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background-color: #555;
+  color: #fff;
+}
+
+.filter-group select:focus, .filter-group input:focus {
+  outline: 2px solid #4CAF50;
+}
+
+.page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.profile-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.profile-section {
+  background-color: #444;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+/* Стили для поисковой строки */
+.search-page-bar {
+  margin: 1.5rem 0;
+  max-width: 800px;
+}
+
+.search-bar {
+  display: flex;
+  width: 100%;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid #4CAF50;
+  border-radius: 4px 0 0 4px;
+  background-color: #444;
+  color: white;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #45a049;
+}
+
+.search-button {
+  padding: 0 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: #45a049;
+}
+
+.search-icon {
+  font-size: 1rem;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 600px) {
+  .search-bar {
+    flex-direction: column;
+  }
+  
+  .search-input {
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .search-button {
+    border-radius: 4px;
+    padding: 10px;
+    justify-content: center;
+  }
+}
