@@ -33,9 +33,9 @@ export const sampleBuilds = [
       id: 3,
       name: "Streaming PC",
       description: "Perfect for content creators and streamers",
-      totalPrice: 1799.99,
+      totalPrice: 1299.99,
       parts: [
-        { name: "AMD Ryzen 9 7950X", price: 699.99 },
+        { name: "AMD Ryzen 7 7700X", price: 300.00 },
         { name: "NVIDIA RTX 3070", price: 499.99 },
         { name: "32GB DDR5 RAM", price: 199.99 },
         { name: "1TB NVMe SSD", price: 99.99 },

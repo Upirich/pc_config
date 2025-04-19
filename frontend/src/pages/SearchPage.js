@@ -8,8 +8,8 @@ const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [allResults, setAllResults] = useState([]); // Все результаты
-  const [filteredResults, setFilteredResults] = useState([]); // Отфильтрованные результаты
+  const [allResults, setAllResults] = useState([]);
+  const [filteredResults, setFilteredResults] = useState([]);
   const [filters, setFilters] = useState({
     category: '',
     priceMin: '',
@@ -17,25 +17,23 @@ const SearchPage = () => {
     sortBy: 'name'
   });
 
-  // Функция для выполнения поиска
+
   const performSearch = (query) => {
     setSearchQuery(query);
     fetchResults(query);
   };
 
-  // При первом открытии страницы
+
   useEffect(() => {
     if (location.state?.searchQuery) {
       performSearch(location.state.searchQuery);
     }
   }, [location]);
 
-  // При изменении фильтров или результатов
   useEffect(() => {
     applyFilters();
   }, [filters, allResults]);
 
-  // Моковая функция поиска
   const fetchResults = async (query) => {
     const mockParts = [
       { id: 1, name: 'Intel Core i9-13900K', category: 'CPU', price: 589.99, rating: 4.8 },
@@ -54,16 +52,16 @@ const SearchPage = () => {
     setAllResults(filtered);
   };
 
-  // Применение фильтров
+
   const applyFilters = () => {
     let results = [...allResults];
     
-    // Фильтрация по категории
+
     if (filters.category) {
       results = results.filter(part => part.category === filters.category);
     }
     
-    // Фильтрация по цене
+
     if (filters.priceMin) {
       results = results.filter(part => part.price >= Number(filters.priceMin));
     }
@@ -72,13 +70,13 @@ const SearchPage = () => {
       results = results.filter(part => part.price <= Number(filters.priceMax));
     }
     
-    // Сортировка
+
     results = sortResults(results, filters.sortBy);
     
     setFilteredResults(results);
   };
 
-  // Функция сортировки
+
   const sortResults = (results, sortBy) => {
     switch (sortBy) {
       case 'price-asc':
