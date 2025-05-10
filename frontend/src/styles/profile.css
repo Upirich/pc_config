@@ -1,0 +1,81 @@
+.profile-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #444;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #4CAF50;
+  padding-bottom: 1rem;
+}
+
+.logout-btn {
+  padding: 0.5rem 1.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-btn:hover {
+  background: #bb2d3b;
+}
+
+.profile-info {
+  margin-bottom: 2rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #333;
+  border-radius: 5px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.info-value {
+  color: #fff;
+}
+
+.profile-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.action-btn {
+  padding: 1rem;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.action-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.loading-screen {
+  text-align: center;
+  padding: 2rem;
+  color: #fff;
+}
