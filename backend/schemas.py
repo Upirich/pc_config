@@ -22,3 +22,13 @@ class Token(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+
+class ComponentOut(BaseModel):
+    part: str
+    price: int
+    type: str
+    article_number: int
+
+    class Config:
+        orm_mode = True
