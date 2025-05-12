@@ -6,6 +6,9 @@ import SearchPage from './pages/SearchPage';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
+import FavoritesPage from './pages/FavoritesPage';
+import BuildsPage from './pages/BuildsPage';
+import EditBuildPage from './pages/EditBuildPage';
 import './App.css';
 
 function App() {
@@ -14,6 +17,21 @@ function App() {
       <AuthProvider>
         <Header />
         <Routes>
+          <Route path="/builds/edit" element={
+            <ProtectedRoute>
+              <EditBuildPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/builds" element={
+            <ProtectedRoute>
+              <BuildsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/favorites" element={
+            <ProtectedRoute>
+              <FavoritesPage />
+            </ProtectedRoute>
+          } />
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/auth" element={<AuthPage />} />

@@ -19,7 +19,6 @@ const BuildCard = ({ build }) => {
           ))}
         </ul>
       </div>
-      <button className="edit-button">Edit Build</button>
     </div>
   );
 };
