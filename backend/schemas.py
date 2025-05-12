@@ -31,4 +31,4 @@ class ComponentOut(BaseModel):
     article_number: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

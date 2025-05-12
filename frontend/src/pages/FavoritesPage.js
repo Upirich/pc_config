@@ -12,7 +12,7 @@ const FavoritesPage = () => {
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const response = await fetch('http://localhost:8000/favorites', {
+        const response = await fetch(`http://localhost:8000/components`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -21,7 +21,6 @@ const FavoritesPage = () => {
         if (!response.ok) throw new Error('Ошибка загрузки');
         
         let data = await response.json();
-        // Сортируем по названию комплектующего
         data = data.sort((a, b) => a.part.localeCompare(b.part));
         setFavorites(data);
       } catch (error) {

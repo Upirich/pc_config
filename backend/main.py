@@ -44,24 +44,14 @@ def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
-@app.get("/user/{userid}/components", response_model=List[ComponentOut])
+@app.get("/components", response_model=list[ComponentOut])
 def get_user_components(
-    userid: str, 
     db: Session = Depends(get_db),
-    current_user: UserOut = Depends(get_current_user)
+    current_user: UserOut = Depends(get_current_user),
 ):
-    if current_user.userid != userid:
-        raise HTTPException(
-            status_code=403, 
-            detail="You can only access your own components"
-        )
-    
-    components = db.query(Component).filter(Component.userid == userid).all()
-    
+    components = db.query(Component).filter(Component.userid == current_user.id).all()
+
     if not components:
-        raise HTTPException(
-            status_code=404,
-            detail="No components found for this user"
-        )
-    
+        raise HTTPException(status_code=404, detail="No components found for this user")
+
     return components
