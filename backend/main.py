@@ -9,7 +9,9 @@ from auth_service import (
     create_access_token,
     get_current_user,
 )
-from schemas import UserCreate, Token, UserOut, UserLogin
+from schemas import UserCreate, Token, UserOut, UserLogin, ComponentOut
+from models import Component
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -40,3 +42,26 @@ def login(form_data: UserLogin, db: Session = Depends(get_db)):
 @app.get("/me", response_model=UserOut)
 def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
+
+
+@app.get("/user/{userid}/components", response_model=List[ComponentOut])
+def get_user_components(
+    userid: str, 
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(get_current_user)
+):
+    if current_user.userid != userid:
+        raise HTTPException(
+            status_code=403, 
+            detail="You can only access your own components"
+        )
+    
+    components = db.query(Component).filter(Component.userid == userid).all()
+    
+    if not components:
+        raise HTTPException(
+            status_code=404,
+            detail="No components found for this user"
+        )
+    
+    return components
