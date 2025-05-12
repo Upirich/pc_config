@@ -81,6 +81,7 @@
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0 0.5rem;
+  line-height: 1;
 }
 
 .components-list {
@@ -112,4 +113,30 @@
   color: #777;
   font-style: italic;
   padding: 0.8rem;
+}
+
+.build-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.delete-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.delete-btn:hover {
+  background: #bb2d3b;
 }
