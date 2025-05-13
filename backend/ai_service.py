@@ -1,7 +1,7 @@
 import requests
 
-API_KEY = "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"
-MODEL = "mistralai/mistral-7b-instruct"
+API_KEY = "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"
+MODEL = "deepseek/deepseek-r1-distill-llama-70b:free"
 
 
 def is_pc_related(prompt: str) -> bool:
