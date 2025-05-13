@@ -32,3 +32,7 @@ class ComponentOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AIRequest(BaseModel):
+    prompt: str

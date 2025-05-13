@@ -1,21 +1,29 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from fastapi.middleware.cors import CORSMiddleware
-from db import engine, Base, get_db
+from ai_service import handle_ai_request  # Импортируем функцию для работы с ИИ
+from schemas import (
+    AIRequest,
+    UserCreate,
+    Token,
+    UserOut,
+    UserLogin,
+    ComponentOut,
+)  # Импортируем нужные схемы
+from models import Component
 from auth_service import (
     register_user,
     authenticate_user,
     create_access_token,
     get_current_user,
 )
-from schemas import UserCreate, Token, UserOut, UserLogin, ComponentOut
-from models import Component
+from db import engine, Base, get_db
+from fastapi.middleware.cors import CORSMiddleware
 
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -55,3 +63,9 @@ def get_user_components(
         raise HTTPException(status_code=404, detail="No components found for this user")
 
     return components
+
+
+@app.post("/ai")
+def ask_ai(request: AIRequest, current_user: UserOut = Depends(get_current_user)):
+    response = handle_ai_request(request.prompt)
+    return {"response": response}
