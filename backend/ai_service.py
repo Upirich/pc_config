@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = "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"
+API_KEY = "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"
 MODEL = "mistralai/mistral-7b-instruct"
 
 
@@ -37,7 +37,7 @@ def ask_openrouter(prompt: str) -> str:
     }
     payload = {"model": MODEL, "messages": [{"role": "user", "content": prompt}]}
 
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, timeout=30)
 
     if response.status_code == 200:
         return response.json()["choices"][0]["message"]["content"].strip()

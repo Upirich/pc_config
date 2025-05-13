@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
 from db import Base
+from datetime import datetime
 
 
 class User(Base):
@@ -11,7 +12,7 @@ class User(Base):
     hashed_password = Column(String)
 
     components = relationship("Component", back_populates="owner")
-    chat_history = relationship("AIChatHistory", back_populates="user")
+    requests = relationship("AIRequestChat", back_populates="user")
 
 
 class Component(Base):
@@ -27,13 +28,12 @@ class Component(Base):
     owner = relationship("User", back_populates="components")
 
 
-class AIChatHistory(Base):
-    __tablename__ = "ai_chat_history"
-
+class AIRequestChat(Base):
+    __tablename__ = "ai_requests"
     id = Column(Integer, primary_key=True, index=True)
-    prompt = Column(String, index=True) 
-    response = Column(String, index=True) 
-    timestamp = Column(String, index=True)
-    
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User", back_populates="chat_history")
+    request_text = Column(Text)
+    response_text = Column(Text)
+    created_at = Column(DateTime, default=datetime.now)
+
+    user = relationship("User", back_populates="requests")

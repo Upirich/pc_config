@@ -3,14 +3,16 @@ from sqlalchemy.orm import Session
 from fastapi import Query
 from ai_service import handle_ai_request  # Импортируем функцию для работы с ИИ
 from schemas import (
-    AIRequest,
     UserCreate,
     Token,
     UserOut,
     UserLogin,
     ComponentOut,
+    AIHistory,
+    AIRequestCreate,
+    AIRequestResponse,
 )  # Импортируем нужные схемы
-from models import Component, AIChatHistory
+from models import Component, AIRequestChat
 from auth_service import (
     register_user,
     authenticate_user,
@@ -19,6 +21,7 @@ from auth_service import (
 )
 from db import engine, Base, get_db
 from fastapi.middleware.cors import CORSMiddleware
+import datetime
 
 
 Base.metadata.create_all(bind=engine)
@@ -27,7 +30,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -66,27 +69,42 @@ async def get_user_components(
     return components
 
 
-@app.post("/ai")
-async def ask_ai(request: AIRequest, current_user: UserOut = Depends(get_current_user)):
-    response = handle_ai_request(request.prompt)
-    return {"answer": response}
-
-
-@app.get("/history", response_model=list[AIChatHistory])
-async def get_ai_history(
-    current_user: UserOut = Depends(get_current_user),
+@app.post("/ai", response_model=AIRequestResponse)
+async def create_ai_request(
+    request: AIRequestCreate,
     db: Session = Depends(get_db),
-    limit: int = Query(
-        le=20,
-        description="Количество возвращаемых записей (максимум 20)"
-    )
+    current_user: UserOut = Depends(get_current_user),
 ):
-    if limit > 20:
-        raise HTTPException(
-            status_code=400,
-            detail="Лимит не может превышать 20 записей"
-        )
+    ai_response = handle_ai_request(request.query)
 
-    return db.query(AIChatHistory).filter(
-        AIChatHistory.user_id == current_user.id
-    ).order_by(AIChatHistory.timestamp.desc()).limit(limit).all()
+    db_request = AIRequestChat(
+        user_id=current_user.id,
+        request_text=request.query,
+        response_text=ai_response,
+        created_at=datetime.datetime.now(),
+    )
+    db.add(db_request)
+    db.commit()
+    db.refresh(db_request)
+
+    return {
+        "id": current_user.id,
+        "query": request.query,
+        "response": ai_response,
+        "timestamp": datetime.datetime.now(),
+    }
+
+
+@app.get("/history", response_model=list[AIHistory])
+async def get_ai_history(
+    db: Session = Depends(get_db), current_user: UserOut = Depends(get_current_user)
+):
+    requests = (
+        db.query(AIRequestChat)
+        .filter(AIRequestChat.user_id == current_user.id)
+        .order_by(AIRequestChat.created_at.desc())
+        .limit(100)
+        .all()
+    )
+
+    return requests
