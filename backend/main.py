@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from routers import users, components, assemblies
 from fastapi.middleware.cors import CORSMiddleware
 from db import engine, Base, get_db
 from auth_service import (
@@ -16,6 +17,9 @@ from models import Component
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.include_router(users.router)
+app.include_router(components.router)
+app.include_router(assemblies.router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],

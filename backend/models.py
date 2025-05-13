@@ -24,3 +24,29 @@ class Component(Base):
     article_number = Column(Integer, unique=True, index=True)
 
     owner = relationship("User", back_populates="components")
+
+
+class Assembly(Base):
+    __tablename__ = "assemblies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    userid = Column(String, ForeignKey("users.userid"))  # Связь с пользователем
+    
+    cpu = Column(String)
+    artcpu = Column(Integer, unique=True)
+    gpu = Column(String)
+    artgpu = Column(Integer, unique=True)
+    motherboard = Column(String)
+    artmotherboard = Column(Integer, unique=True)
+    ram = Column(String)
+    artram = Column(Integer, unique=True)
+    storage = Column(String)
+    artstorage = Column(Integer, unique=True)
+    case = Column(String)
+    artcase = Column(Integer, unique=True)
+    cpucool = Column(String)
+    artcpucool = Column(Integer, unique=True)
+    psu = Column(String)
+    artpsu = Column(Integer, unique=True)
+    
+    owner = relationship("User", back_populates="assemblies")
