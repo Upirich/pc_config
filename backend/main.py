@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi import Query
 from ai_service import handle_ai_request  # Импортируем функцию для работы с ИИ
 from schemas import (
     AIRequest,
@@ -9,7 +10,7 @@ from schemas import (
     UserLogin,
     ComponentOut,
 )  # Импортируем нужные схемы
-from models import Component
+from models import Component, AIChatHistory
 from auth_service import (
     register_user,
     authenticate_user,
@@ -69,3 +70,23 @@ async def get_user_components(
 async def ask_ai(request: AIRequest, current_user: UserOut = Depends(get_current_user)):
     response = handle_ai_request(request.prompt)
     return {"answer": response}
+
+
+@app.get("/history", response_model=list[AIChatHistory])
+async def get_ai_history(
+    current_user: UserOut = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    limit: int = Query(
+        le=20,
+        description="Количество возвращаемых записей (максимум 20)"
+    )
+):
+    if limit > 20:
+        raise HTTPException(
+            status_code=400,
+            detail="Лимит не может превышать 20 записей"
+        )
+
+    return db.query(AIChatHistory).filter(
+        AIChatHistory.user_id == current_user.id
+    ).order_by(AIChatHistory.timestamp.desc()).limit(limit).all()

@@ -11,6 +11,7 @@ class User(Base):
     hashed_password = Column(String)
 
     components = relationship("Component", back_populates="owner")
+    chat_history = relationship("AIChatHistory", back_populates="user")
 
 
 class Component(Base):
@@ -24,3 +25,15 @@ class Component(Base):
     article_number = Column(Integer, unique=True, index=True)
 
     owner = relationship("User", back_populates="components")
+
+
+class AIChatHistory(Base):
+    __tablename__ = "ai_chat_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    prompt = Column(String, index=True) 
+    response = Column(String, index=True) 
+    timestamp = Column(String, index=True)
+    
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="chat_history")

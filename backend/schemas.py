@@ -36,3 +36,14 @@ class ComponentOut(BaseModel):
 
 class AIRequest(BaseModel):
     prompt: str
+
+
+class AIChatHistory(BaseModel):
+    prompt: str
+    response: str
+    id: int
+    user_id: int
+    timestamp: str
+    
+    class Config:
+        orm_mode = True
