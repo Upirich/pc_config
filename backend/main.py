@@ -34,12 +34,12 @@ app.add_middleware(
 
 
 @app.post("/register", response_model=UserOut)
-def register(user: UserCreate, db: Session = Depends(get_db)):
+async def register(user: UserCreate, db: Session = Depends(get_db)):
     return register_user(db, user)
 
 
 @app.post("/login", response_model=Token)
-def login(form_data: UserLogin, db: Session = Depends(get_db)):
+async def login(form_data: UserLogin, db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.email, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Неверные данные")
@@ -48,12 +48,12 @@ def login(form_data: UserLogin, db: Session = Depends(get_db)):
 
 
 @app.get("/me", response_model=UserOut)
-def me(current_user: UserOut = Depends(get_current_user)):
+async def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
 @app.get("/components", response_model=list[ComponentOut])
-def get_user_components(
+async def get_user_components(
     db: Session = Depends(get_db),
     current_user: UserOut = Depends(get_current_user),
 ):
@@ -66,6 +66,6 @@ def get_user_components(
 
 
 @app.post("/ai")
-def ask_ai(request: AIRequest, current_user: UserOut = Depends(get_current_user)):
+async def ask_ai(request: AIRequest, current_user: UserOut = Depends(get_current_user)):
     response = handle_ai_request(request.prompt)
-    return {"response": response}
+    return {"answer": response}
