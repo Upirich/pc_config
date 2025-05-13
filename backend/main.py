@@ -21,7 +21,7 @@ from auth_service import (
     get_current_user,
 )
 import datetime
-
+from sqlalchemy import or_, func
 
 Base.metadata.create_all(bind=engine)
 
@@ -107,3 +107,32 @@ async def get_ai_history(
     )
 
     return requests
+
+
+@app.get("/search_components", response_model=list[ComponentOut])
+def search_components(
+    query: str,
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(get_current_user),
+):
+    try:
+        price = int(query)
+    except ValueError:
+        price = None
+
+    results = (
+        db.query(Component)
+        .filter(
+            or_(
+                func.lower(Component.part).like(f"%{query.lower()}%"),
+                func.lower(Component.description).like(f"%{query.lower()}%"),
+                Component.price == price if price is not None else False,
+            )
+        )
+        .all()
+    )
+
+    if not results:
+        raise HTTPException(status_code=404, detail="Ничего не найдено")
+
+    return results

@@ -20,14 +20,12 @@ class Component(Base):
     __tablename__ = "components"
 
     id = Column(Integer, primary_key=True, index=True)
-    userid = Column(String, ForeignKey("users.id"))
-    part = Column(String, unique=False, index=True)
-    price = Column(Integer, unique=False, index=True)
-    type = Column(String, unique=False, index=True)
-    article_number = Column(Integer, unique=True, index=True)
+    type = Column(String, index=True)
+    name = Column(String, index=True)
+    price = Column(Integer)
+    description = Column(Text)
 
-    owner = relationship("User", back_populates="components")
-
+    owner = relationship("User", back_populates="components", uselist=False)
 
 
 class AIRequestChat(Base):
@@ -45,8 +43,8 @@ class Assembly(Base):
     __tablename__ = "assemblies"
 
     id = Column(Integer, primary_key=True, index=True)
-    userid = Column(String, ForeignKey("users.userid"))  # Связь с пользователем
-    
+    userid = Column(String, ForeignKey("users.userid"))
+
     cpu = Column(String)
     artcpu = Column(Integer, unique=True)
     gpu = Column(String)
@@ -63,5 +61,5 @@ class Assembly(Base):
     artcpucool = Column(Integer, unique=True)
     psu = Column(String)
     artpsu = Column(Integer, unique=True)
-    
+
     owner = relationship("User", back_populates="assemblies")

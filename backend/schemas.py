@@ -58,3 +58,14 @@ class AIRequestResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ComponentOut(BaseModel):
+    part: str
+    price: int
+    type: str
+    article_number: int
+    description: str | None = None  # <-- добавлено
+
+    class Config:
+        from_attributes = True
