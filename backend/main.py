@@ -1,7 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from fastapi import Query
-from ai_service import handle_ai_request  # Импортируем функцию для работы с ИИ
+from ai_service import handle_ai_request
 from schemas import (
     UserCreate,
     Token,
@@ -11,16 +10,16 @@ from schemas import (
     AIHistory,
     AIRequestCreate,
     AIRequestResponse,
-)  # Импортируем нужные схемы
+)
 from models import Component, AIRequestChat
+from fastapi.middleware.cors import CORSMiddleware
+from db import engine, Base, get_db
 from auth_service import (
     register_user,
     authenticate_user,
     create_access_token,
     get_current_user,
 )
-from db import engine, Base, get_db
-from fastapi.middleware.cors import CORSMiddleware
 import datetime
 
 
