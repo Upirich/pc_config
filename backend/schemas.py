@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+import datetime
 
 
 class UserCreate(BaseModel):
@@ -29,6 +30,31 @@ class ComponentOut(BaseModel):
     price: int
     type: str
     article_number: int
+
+    class Config:
+        from_attributes = True
+
+
+class AIHistory(BaseModel):
+    id: int
+    user_id: int
+    request_text: str
+    response_text: str
+    created_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AIRequestCreate(BaseModel):
+    query: str
+
+
+class AIRequestResponse(BaseModel):
+    id: int
+    query: str
+    response: str
+    timestamp: datetime.datetime
 
     class Config:
         from_attributes = True

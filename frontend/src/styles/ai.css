@@ -1,0 +1,175 @@
+.ai-assistant-container {
+  display: flex;
+  height: calc(100vh - 120px);
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #333;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  background: #444;
+  padding: 1.5rem;
+  border-right: 1px solid #555;
+  overflow-y: auto;
+}
+
+.sidebar h3 {
+  color: #4CAF50;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #555;
+}
+
+.message-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-item {
+  padding: 0.8rem;
+  background: #555;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-size: 0.9rem;
+  color: #ddd;
+}
+
+.history-item:hover {
+  background: #666;
+}
+
+.history-item.active {
+  background: #4CAF50;
+  color: white;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.message-detail {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+}
+
+.user-query, .ai-response {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #444;
+  border-radius: 8px;
+}
+
+.user-query h4, .ai-response h4 {
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.ai-response p {
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.loading-text {
+  color: #aaa;
+  font-style: italic;
+}
+
+.welcome-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #ddd;
+}
+
+.welcome-message h2 {
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.input-form {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.input-form input {
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 5px;
+  background: #444;
+  color: white;
+}
+
+.input-form button {
+  padding: 0 2rem;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.input-form button:hover {
+  background: #45a049;
+}
+
+.input-form button:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-radius: 50%;
+  border-top-color: #2196f3;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.message-date {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.example-questions {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  color: black;
+}
+
+.example-questions ul {
+  padding-left: 20px;
+  margin: 10px 0 0 0;
+}
