@@ -35,15 +35,15 @@ class ComponentOut(BaseModel):
         from_attributes = True
 
 
-class AIHistory(BaseModel):
+class AIChatHistory(BaseModel):
+    prompt: str
+    response: str
     id: int
     user_id: int
-    request_text: str
-    response_text: str
-    created_at: datetime.datetime
-
+    timestamp: str
+    
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class AIRequestCreate(BaseModel):

@@ -45,7 +45,7 @@ class Assembly(Base):
     __tablename__ = "assemblies"
 
     id = Column(Integer, primary_key=True, index=True)
-    userid = Column(String, ForeignKey("users.userid"))  # Связь с пользователем
+    userid = Column(String, ForeignKey("users.id"))  # Связь с пользователем
     
     cpu = Column(String)
     artcpu = Column(Integer, unique=True)
@@ -65,3 +65,15 @@ class Assembly(Base):
     artpsu = Column(Integer, unique=True)
     
     owner = relationship("User", back_populates="assemblies")
+
+
+class AIChatHistory(Base):
+    __tablename__ = "ai_chat_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    prompt = Column(String, index=True) 
+    response = Column(String, index=True) 
+    timestamp = Column(String, index=True)
+    
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship("User", back_populates="chat_history")
