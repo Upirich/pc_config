@@ -188,6 +188,7 @@ const EditBuildPage = () => {
                       >
                         <div className="part-info">
                           <div className="part-name">{item.name}</div>
+                          <div className="part-type">{item.type}</div>
                         </div>
                         <div className="part-price">
                           {parseFloat(item.price).toFixed(2)} ₽

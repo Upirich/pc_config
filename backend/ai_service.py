@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = "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"
+API_KEY = "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"
 MODEL = "deepseek/deepseek-r1-distill-llama-70b:free"
 
 
