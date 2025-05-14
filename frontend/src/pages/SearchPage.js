@@ -17,12 +17,10 @@ const SearchPage = () => {
     sortBy: 'name'
   });
 
-
   const performSearch = (query) => {
     setSearchQuery(query);
     fetchResults(query);
   };
-
 
   useEffect(() => {
     if (location.state?.searchQuery) {
@@ -35,32 +33,39 @@ const SearchPage = () => {
   }, [filters, allResults]);
 
   const fetchResults = async (query) => {
-    const mockParts = [
-      { id: 1, name: 'Intel Core i9-13900K', category: 'CPU', price: 589.99, rating: 4.8 },
-      { id: 2, name: 'AMD Ryzen 9 7950X', category: 'CPU', price: 699.99, rating: 4.9 },
-      { id: 3, name: 'NVIDIA RTX 4090', category: 'GPU', price: 1599.99, rating: 4.7 },
-      { id: 4, name: 'AMD RX 7900 XTX', category: 'GPU', price: 999.99, rating: 4.6 },
-      { id: 5, name: 'Corsair Vengeance 32GB DDR5', category: 'RAM', price: 129.99, rating: 4.5 },
-      { id: 6, name: 'Samsung 980 Pro 1TB', category: 'Storage', price: 99.99, rating: 4.8 },
-    ];
-    
-    const filtered = mockParts.filter(part => 
-      part.name.toLowerCase().includes(query.toLowerCase()) ||
-      part.category.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    setAllResults(filtered);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/search_components?query=${encodeURIComponent(query)}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Ошибка при загрузке данных');
+      }
+      
+      const data = await response.json();
+      
+      // Преобразование данных бэкенда под структуру фронтенда
+      const transformedData = data.map(item => ({
+        id: item.id,
+        name: item.name.toString(),
+        category: item.type,
+        price: parseFloat(item.price),
+        description: item.description
+      }));
+      
+      setAllResults(transformedData);
+    } catch (error) {
+      console.error('Ошибка:', error);
+      setAllResults([]);
+    }
   };
-
 
   const applyFilters = () => {
     let results = [...allResults];
-    
 
     if (filters.category) {
       results = results.filter(part => part.category === filters.category);
     }
-    
 
     if (filters.priceMin) {
       results = results.filter(part => part.price >= Number(filters.priceMin));
@@ -69,13 +74,11 @@ const SearchPage = () => {
     if (filters.priceMax) {
       results = results.filter(part => part.price <= Number(filters.priceMax));
     }
-    
 
     results = sortResults(results, filters.sortBy);
     
     setFilteredResults(results);
   };
-
 
   const sortResults = (results, sortBy) => {
     switch (sortBy) {
@@ -83,16 +86,14 @@ const SearchPage = () => {
         return [...results].sort((a, b) => a.price - b.price);
       case 'price-desc':
         return [...results].sort((a, b) => b.price - a.price);
-      case 'rating':
-        return [...results].sort((a, b) => b.rating - a.rating);
-      default: // name
+      default:
         return [...results].sort((a, b) => a.name.localeCompare(b.name));
     }
   };
 
   return (
     <div className="page">
-      <h1>Search Results {searchQuery && `for "${searchQuery}"`}</h1>
+      <h1>Результаты поиска {searchQuery && `для "${searchQuery}"`}</h1>
       
       <div className="search-page-bar">
         <SearchBar 
@@ -112,12 +113,21 @@ const SearchPage = () => {
       
       <div className="parts-grid">
         {filteredResults.length > 0 ? (
-          filteredResults.map(part => <PartCard key={part.id} part={part} />)
+          filteredResults.map(part => (
+            <PartCard 
+              key={part.id} 
+              part={{
+                ...part,
+                // Добавляем совместимость с прежней структурой данных
+                price: part.price
+              }}
+            />
+          ))
         ) : (
           <p className="no-results">
             {allResults.length === 0 
-              ? "No parts found. Try another search." 
-              : "No parts match your filters. Try adjusting them."}
+              ? "Компоненты не найдены" 
+              : "Нет компонентов, соответствующих фильтрам"}
           </p>
         )}
       </div>

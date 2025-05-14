@@ -13,7 +13,7 @@ const HomePage = () => {
 
   return (
     <div className="page">
-      <h1>Popular PC Builds</h1>
+      <h1>Популярные сборки ПК</h1>
       <SearchBar onSearch={handleSearch} />
       <div className="builds-grid">
         {sampleBuilds.map(build => (

@@ -143,10 +143,6 @@
   color: #4CAF50;
 }
 
-.build-rating {
-  color: #FFD700;
-}
-
 .part-category {
   background-color: #555;
   padding: 0.25rem 0.5rem;
@@ -154,9 +150,8 @@
   font-size: 0.8rem;
 }
 
-.part-rating {
-  margin-bottom: 1rem;
-  color: #FFD700;
+.part-desc {
+  font-weight: bold;
 }
 
 .build-parts h4 {

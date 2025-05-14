@@ -20,7 +20,7 @@ const SearchBar = ({ initialQuery = '', onSearch }) => {
         className="search-input"
       />
       <button type="submit" className="search-button">
-        <i className="search-icon">🔍</i> Search
+        <i className="search-icon">🔍</i> Поиск
       </button>
     </form>
   );

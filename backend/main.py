@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ai_service import handle_ai_request
 from schemas import (
@@ -10,10 +10,13 @@ from schemas import (
     AIHistory,
     AIRequestCreate,
     AIRequestResponse,
+    BuildCreate,
+    BuildOut,
 )
-from models import Component, AIRequestChat
+from models import Component, AIRequestChat, Build
 from fastapi.middleware.cors import CORSMiddleware
 from db import engine, Base, get_db
+from db1 import engine1, Base1, get_db1
 from auth_service import (
     register_user,
     authenticate_user,
@@ -24,6 +27,7 @@ import datetime
 
 
 Base.metadata.create_all(bind=engine)
+Base1.metadata.create_all(bind=engine1)
 
 app = FastAPI()
 
@@ -55,17 +59,17 @@ async def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
-@app.get("/components", response_model=list[ComponentOut])
-async def get_user_components(
-    db: Session = Depends(get_db),
-    current_user: UserOut = Depends(get_current_user),
-):
-    components = db.query(Component).filter(Component.userid == current_user.id).all()
+# @app.get("/components", response_model=list[ComponentOut])
+# async def get_user_components(
+#     db: Session = Depends(get_db),
+#     current_user: UserOut = Depends(get_current_user),
+# ):
+#     components = db.query(Component).filter(Component.userid == current_user.id).all()
 
-    if not components:
-        raise HTTPException(status_code=404, detail="No components found for this user")
+#     if not components:
+#         raise HTTPException(status_code=404, detail="No components found for this user")
 
-    return components
+#     return components
 
 
 @app.post("/ai", response_model=AIRequestResponse)
@@ -107,3 +111,102 @@ async def get_ai_history(
     )
 
     return requests
+
+
+@app.get("/search_components", response_model=list[ComponentOut])
+def search_components(
+    query: str,
+    db: Session = Depends(get_db1),
+):
+    search_pattern = f"%{query}%"
+
+    results = db.query(Component).filter(Component.name.ilike(search_pattern)).all()
+
+    if not results:
+        raise HTTPException(status_code=404, detail="Ничего не найдено")
+
+    return results
+
+
+@app.post("/builds", response_model=BuildOut)
+async def create_build(
+    build: BuildCreate,
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(get_current_user),
+):
+    # Валидация компонентов
+    valid_types = [
+        "cpu",
+        "gpu",
+        "motherboard",
+        "ram",
+        "storage",
+        "psu",
+        "cpucool",
+        "case",
+    ]
+    for component_type in build.components.keys():
+        if component_type not in valid_types:
+            raise HTTPException(
+                status_code=400, detail=f"Invalid component type: {component_type}"
+            )
+
+    db_build = Build(
+        name=build.name, components=build.components, user_id=current_user.id
+    )
+    db.add(db_build)
+    db.commit()
+    db.refresh(db_build)
+    return db_build
+
+
+@app.get("/builds/{build_id}", response_model=BuildOut)
+async def get_build(
+    build_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(get_current_user),
+):
+    build = (
+        db.query(Build)
+        .filter(Build.id == build_id, Build.user_id == current_user.id)
+        .first()
+    )
+
+    if not build:
+        raise HTTPException(status_code=404, detail="Build not found")
+
+    return build
+
+
+@app.get("/userbuilds", response_model=list[BuildOut])
+async def get_builds(
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(get_current_user),
+):
+    builds = db.query(Build).filter(Build.user_id == current_user.id).limit(20)
+
+    if not builds:
+        return HTTPException(status_code=404, detail="Builds not found")
+
+    return builds
+
+
+@app.delete("/builds/{build_id}")
+async def delete_build(
+    build_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserOut = Depends(get_current_user),
+):
+    db_build = (
+        db.query(Build)
+        .filter(Build.id == build_id, Build.user_id == current_user.id)
+        .first()
+    )
+
+    if not db_build:
+        raise HTTPException(status_code=404, detail="Build not found")
+
+    db.delete(db_build)
+    db.commit()
+
+    return {"status": "success", "message": "Build deleted"}

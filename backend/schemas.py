@@ -3,11 +3,13 @@ import datetime
 
 
 class UserCreate(BaseModel):
+    username: str
     email: str
     password: str
 
 
 class UserOut(BaseModel):
+    username: str
     id: int
     email: str
 
@@ -26,10 +28,11 @@ class UserLogin(BaseModel):
 
 
 class ComponentOut(BaseModel):
-    part: str
-    price: int
+    id: int
     type: str
-    article_number: int
+    name: str
+    price: int
+    description: str
 
     class Config:
         from_attributes = True
@@ -55,6 +58,21 @@ class AIRequestResponse(BaseModel):
     query: str
     response: str
     timestamp: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
+
+class BuildCreate(BaseModel):
+    name: str
+    components: dict
+
+
+class BuildOut(BaseModel):
+    id: int
+    name: str
+    components: dict
+    user_id: int
 
     class Config:
         from_attributes = True

@@ -21,64 +21,105 @@ const EditBuildPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [activeComponent, setActiveComponent] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Сброс поиска при изменении активного компонента
+  useEffect(() => {
+    setSearchResults([]);
+    setSearchQuery('');
+  }, [activeComponent]);
+
+  // Загрузка существующей сборки
   useEffect(() => {
     if (location.state?.build) {
       setBuildName(location.state.build.name);
-      setSelectedComponents(location.state.build.components);
+      setSelectedComponents(location.state.build.components || {});
     }
   }, [location]);
 
-  const handleSearch = async (componentType) => {
+  // Поиск компонентов
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!activeComponent) return;
+    
+    setIsLoading(true);
     try {
-      const response = await axios.get(`http://localhost:8000/api/parts/search`, {
-        params: { type: componentType, q: searchQuery },
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get(`http://localhost:8000/search_components`, {
+        params: { 
+          type: activeComponent,
+          query: searchQuery 
+        },
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}` 
+        }
       });
       
       setSearchResults(response.data);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('Ошибка поиска:', error);
+      alert('Ошибка при выполнении поиска');
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Выбор компонента
   const selectComponent = (component) => {
     setSelectedComponents(prev => ({
       ...prev,
       [activeComponent]: {
-        name: component.part,
-        price: component.price,
-        art: component.art
+        id: component.id,
+        name: component.name,
+        price: parseFloat(component.price),
+        type: component.type
       }
     }));
     setActiveComponent(null);
-    setSearchQuery('');
   };
 
+  // Расчет общей стоимости
   const calculateTotal = () => {
-    return Object.values(selectedComponents).reduce((sum, comp) => sum + (comp?.price || 0), 0);
+    return Object.values(selectedComponents)
+      .reduce((sum, comp) => sum + (comp?.price || 0), 0)
+      .toFixed(2);
   };
 
+  // Сохранение сборки
   const saveBuild = async () => {
     if (!buildName.trim()) {
       alert('Введите название сборки');
       return;
     }
 
+    if (Object.keys(selectedComponents).length === 0) {
+      alert('Добавьте хотя бы один компонент');
+      return;
+    }
+
     try {
-      await axios.post('http://localhost:8000/api/builds', {
-        name: buildName,
-        components: selectedComponents
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } // Исправлено здесь
+      const endpoint = location.state?.build 
+        ? `/builds/${location.state.build.id}`
+        : '/builds';
+
+      await axios({
+        method: location.state?.build ? 'PUT' : 'POST',
+        url: `http://localhost:8000${endpoint}`,
+        data: {
+          name: buildName,
+          components: selectedComponents
+        },
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}` 
+        }
       });
-      
+
       navigate('/builds');
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Ошибка сохранения:', error.response?.data?.detail || error.message);
+      alert('Ошибка сохранения сборки');
     }
   };
 
@@ -98,7 +139,7 @@ const EditBuildPage = () => {
           className="build-name-input"
         />
         <div className="total-price">
-          Итоговая стоимость: {calculateTotal().toLocaleString()} ₽
+          Итоговая стоимость: {calculateTotal()} ₽
         </div>
       </div>
 
@@ -108,39 +149,57 @@ const EditBuildPage = () => {
             key={key}
             className={`component-card ${activeComponent === key ? 'active' : ''}`}
           >
-            <div className="component-header" onClick={() => setActiveComponent(key)}>
+            <div 
+              className="component-header" 
+              onClick={() => setActiveComponent(prev => prev === key ? null : key)}
+            >
               <h4>{label}</h4>
               <div className="selected-component">
                 {selectedComponents[key]?.name || 'Не выбрано'}
+                {selectedComponents[key]?.price && (
+                  <span className="component-price">
+                    {selectedComponents[key].price.toFixed(2)} ₽
+                  </span>
+                )}
               </div>
             </div>
 
             {activeComponent === key && (
               <div className="search-section">
-                <div className="search-bar">
+                <form className="search-bar" onSubmit={handleSearch}>
                   <input
                     type="text"
                     placeholder={`Поиск ${label.toLowerCase()}...`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch(key)}
                   />
-                  <button onClick={() => handleSearch(key)}>Найти</button>
-                </div>
+                  <button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Поиск...' : 'Найти'}
+                  </button>
+                </form>
 
-                <div className="search-results">
-                  {searchResults.map((item) => (
-                    <div 
-                      key={item.art} 
-                      className="result-item"
-                      onClick={() => selectComponent(item)}
-                    >
-                      <div className="part-name">{item.part}</div>
-                      <div className="part-price">{item.price.toLocaleString()} ₽</div>
-                      <div className="part-art">Артикул: {item.art}</div>
-                    </div>
-                  ))}
-                </div>
+                {searchResults.length > 0 && (
+                  <div className="search-results">
+                    {searchResults.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="result-item"
+                        onClick={() => selectComponent(item)}
+                      >
+                        <div className="part-info">
+                          <div className="part-name">{item.name}</div>
+                        </div>
+                        <div className="part-price">
+                          {parseFloat(item.price).toFixed(2)} ₽
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {searchResults.length === 0 && searchQuery && !isLoading && (
+                  <div className="no-results">Ничего не найдено</div>
+                )}
               </div>
             )}
           </div>
@@ -149,7 +208,7 @@ const EditBuildPage = () => {
 
       <div className="actions">
         <button onClick={saveBuild} className="save-btn">
-          Сохранить сборку
+          {location.state?.build ? 'Обновить сборку' : 'Сохранить сборку'}
         </button>
         <button onClick={() => navigate('/builds')} className="cancel-btn">
           Отмена

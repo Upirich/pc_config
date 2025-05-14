@@ -67,7 +67,6 @@ const FilterPanel = ({ filters, onFilterChange, availableCategories }) => {
           <option value="name">Name (A-Z)</option>
           <option value="price-asc">Price (Low to High)</option>
           <option value="price-desc">Price (High to Low)</option>
-          <option value="rating">Rating</option>
         </select>
       </div>
       

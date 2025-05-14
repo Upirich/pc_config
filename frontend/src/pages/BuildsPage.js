@@ -4,6 +4,17 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import '../styles/builds.css';
 
+const componentTypes = {
+  cpu: 'Процессор',
+  gpu: 'Видеокарта',
+  motherboard: 'Материнская плата',
+  ram: 'Оперативная память',
+  storage: 'Накопитель',
+  psu: 'Блок питания',
+  cpucool: 'Кулер',
+  case: 'Корпус'
+};
+
 const BuildsPage = () => {
   const [builds, setBuilds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +24,7 @@ const BuildsPage = () => {
   useEffect(() => {
     const fetchBuilds = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/builds', {
+        const response = await axios.get('http://localhost:8000/userbuilds', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
@@ -37,7 +48,7 @@ const BuildsPage = () => {
     if (!window.confirm('Вы уверены, что хотите удалить эту сборку?')) return;
 
     try {
-      await axios.delete(`http://localhost:8000/api/builds/${buildId}`, {
+      await axios.delete(`http://localhost:8000/builds/${buildId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -50,11 +61,11 @@ const BuildsPage = () => {
     }
   };
 
-  const renderComponent = (component, art) => {
+  const renderComponent = (component) => {
     return component ? (
       <div className="component-item">
-        <span className="component-name">{component}</span>
-        <span className="component-art">Артикул: {art}</span>
+        <span className="component-name">{component.name}</span>
+        <span className="component-price">{component.price?.toFixed(2)} ₽</span>
       </div>
     ) : <div className="component-empty">Пусто</div>;
   };
@@ -106,16 +117,19 @@ const BuildsPage = () => {
             
             <div className="components-list">
               <div className="components-column">
-                {renderComponent(build.cpu, build.artcpu)}
-                {renderComponent(build.gpu, build.artgpu)}
-                {renderComponent(build.motherboard, build.artmotherboard)}
-                {renderComponent(build.ram, build.artram)}
+                {Object.entries(componentTypes).map(([key, label]) => (
+                  <div key={key} className="component-category">
+                    <div className="component-label">{label}:</div>
+                    {renderComponent(build.components?.[key])}
+                  </div>
+                ))}
               </div>
-              <div className="components-column">
-                {renderComponent(build.storage, build.artstorage)}
-                {renderComponent(build.psu, build.artpsu)}
-                {renderComponent(build.cpucool, build.artcpucool)}
-                {renderComponent(build.case, build.artcase)}
+            </div>
+            <div className="build-footer">
+              <div className="total-price">
+                Итого: {Object.values(build.components || {})
+                  .reduce((sum, comp) => sum + (comp?.price || 0), 0)
+                  .toFixed(2)} ₽
               </div>
             </div>
           </div>
