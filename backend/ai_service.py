@@ -1,52 +1,29 @@
-import requests
+from openai import OpenAI
 
-API_KEY = "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"
-MODEL = "deepseek/deepseek-r1-distill-llama-70b:free"
+client = OpenAI(
+    api_key="sk-KZBayWeUNOHz0lGu1xOEVxVizGudZ5JF",
+    base_url="https://api.proxyapi.ru/openai/v1",
+)
 
+messages = [
+    {"role": "system", "content": "Ты ассистент, который помогает только с вопросами по компьютерам, сборке ПК и выбору комплектующих. Пожалуйста, отвечай только на эти вопросы."}
+]
 
-def is_pc_related(prompt: str) -> bool:
-    keywords = [
-        "пк",
-        "сборка",
-        "комплектующие",
-        "видеокарта",
-        "процессор",
-        "собери",
-        "игровой",
-        "офисный",
-        "железо",
-        "апгрейд",
-        "ssd",
-        "hdd",
-        "материнская плата",
-        "оперативка",
-        "блок питания",
-        "бюджет",
-    ]
-    prompt_lower = prompt.lower()
-    return any(word in prompt_lower for word in keywords)
+def chat_with_gpt(user_input: str) -> str:
+    messages.append({"role": "user", "content": user_input})
+    chat_completion = client.chat.completions.create(model="gpt-4o", messages=messages)
 
+    response = chat_completion.choices[0].message.content
+    messages.append({"role": "assistant", "content": response})
 
-def ask_openrouter(prompt: str) -> str:
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost",
-        "X-Title": "PC Config Assistant",
-    }
-    payload = {"model": MODEL, "messages": [{"role": "user", "content": prompt}]}
-
-    response = requests.post(url, json=payload, headers=headers, timeout=30)
-
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"].strip()
-    else:
-        return "❌ Ошибка при обращении к ИИ."
-
+    return response
 
 def handle_ai_request(prompt: str) -> str:
-    if is_pc_related(prompt):
-        return ask_openrouter(prompt)
-    else:
-        return "💡 Я помогаю только с выбором комплектующих и сборкой ПК. Попробуйте сформулировать вопрос иначе."
+    return chat_with_gpt(prompt)
+
+while True:
+    user_input = input("Вы: ")
+    if user_input.lower() in ["выход", "exit"]:
+        break
+    response = handle_ai_request(user_input)
+    print("AI: " + response)
