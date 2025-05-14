@@ -6,7 +6,6 @@ import SearchPage from './pages/SearchPage';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
-import FavoritesPage from './pages/FavoritesPage';
 import BuildsPage from './pages/BuildsPage';
 import EditBuildPage from './pages/EditBuildPage';
 import AIPage from './pages/AIpage';
@@ -31,11 +30,6 @@ function App() {
           <Route path="/builds" element={
             <ProtectedRoute>
               <BuildsPage />
-            </ProtectedRoute>
-          }/>
-          <Route path="/favorites" element={
-            <ProtectedRoute>
-              <FavoritesPage />
             </ProtectedRoute>
           }/>
           <Route path="/" element={<HomePage />} />

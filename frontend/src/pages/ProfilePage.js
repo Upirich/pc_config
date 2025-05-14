@@ -28,12 +28,6 @@ const ProfilePage = () => {
       </div>
 
       <div className="profile-actions">
-        <button 
-          onClick={() => navigate('/favorites')}
-          className="action-btn"
-        >
-          Избранное
-        </button>
         <button
           onClick={() => navigate('/builds')}
           className="action-btn"
