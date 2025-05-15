@@ -1,6 +1,10 @@
 from openai import OpenAI
 from typing import Dict, List
 import logging
+from sqlalchemy.orm import Session
+from models import Component
+from schemas import Complect, FinalAnswer
+import json
 
 client = OpenAI(
     api_key="sk-KZBayWeUNOHz0lGu1xOEVxVizGudZ5JF",
@@ -19,12 +23,33 @@ SYSTEM_PROMPT = {
 }
 
 
-def chat_with_gpt(user_input: str, user_id: int) -> str:
+def get_components_from_db(db: Session) -> List[Complect]:
+    components = db.query(Component).all()
+    return [
+        Complect(
+            id=component.id,
+            name=component.name,
+            type=component.type,
+            price=component.price,
+            description=component.description,
+        )
+        for component in components
+    ]
+
+
+def chat_with_gpt(user_input: str, user_id: int, db: Session) -> FinalAnswer:
     try:
         if user_id not in user_messages:
             user_messages[user_id] = [SYSTEM_PROMPT]
 
-        user_messages[user_id].append({"role": "user", "content": user_input})
+        components = get_components_from_db(db)
+        components_text = "\n".join(
+            f"{c.id}: {c.type} {c.name} — {c.price} ₽ ({c.description})" for c in components
+        )
+
+        user_messages[user_id].append(
+            {"role": "user", "content": f"{user_input}\n\nДоступные комплектующие:\n{components_text}"}
+        )
 
         chat_completion = client.chat.completions.create(
             model="gpt-4o",
@@ -33,12 +58,18 @@ def chat_with_gpt(user_input: str, user_id: int) -> str:
 
         response = chat_completion.choices[0].message.content
         user_messages[user_id].append({"role": "assistant", "content": response})
-        return response
+
+        parsed_response = json.loads(response)
+        return FinalAnswer(**parsed_response)
 
     except Exception as e:
         logging.exception("Ошибка при обращении к OpenAI:")
-        return "❌ Произошла ошибка при обработке запроса к ИИ."
+        return FinalAnswer(
+            thoughts=[],
+            choosen_complect=[],
+            final_answer="❌ Произошла ошибка при обработке запроса к ИИ.",
+        )
 
 
-def handle_ai_request(prompt: str, user_id: int) -> str:
-    return chat_with_gpt(prompt, user_id)
+def handle_ai_request(prompt: str, user_id: int, db: Session) -> FinalAnswer:
+    return chat_with_gpt(prompt, user_id, db)
