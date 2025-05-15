@@ -9,7 +9,7 @@ from schemas import (
     ComponentOut,
     AIHistory,
     AIRequestCreate,
-    AIRequestResponse,
+    FinalAnswer,
     BuildCreate,
     BuildOut,
 )
@@ -63,31 +63,26 @@ async def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
-@app.post("/ai", response_model=AIRequestResponse)
+@app.post("/ai", response_model=FinalAnswer)
 async def create_ai_request(
     request: AIRequestCreate,
     db: Session = Depends(get_db),
     current_user: UserOut = Depends(get_current_user),
 ):
     try:
-        ai_response = handle_ai_request(request.query, current_user.id)
+        ai_response = handle_ai_request(request.query, current_user.id, db)
 
         db_request = AIRequestChat(
             user_id=current_user.id,
             request_text=request.query,
-            response_text=ai_response,
+            response_text=ai_response.final_answer,
             created_at=datetime.datetime.now(),
         )
         db.add(db_request)
         db.commit()
         db.refresh(db_request)
 
-        return {
-            "id": current_user.id,
-            "query": request.query,
-            "response": ai_response,
-            "timestamp": datetime.datetime.now(),
-        }
+        return ai_response
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка сервера: {str(e)}")
