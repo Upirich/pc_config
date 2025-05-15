@@ -63,16 +63,20 @@ class AIRequestResponse(BaseModel):
         from_attributes = True
 
 
-class BuildCreate(BaseModel):
-    name: str
-    components: dict
-
-
-class BuildOut(BaseModel):
+class Complect(BaseModel):
     id: int
     name: str
-    components: dict
-    user_id: int
+    type: str
+    price: int
+    description: str
 
-    class Config:
-        from_attributes = True
+
+class Think(BaseModel):
+    explanation: str
+    output: str
+
+
+class FinalAnswer(BaseModel):
+    thoughts: list[Think]
+    choosen_complect: list[Complect]
+    final_answer: str
