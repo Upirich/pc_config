@@ -1,52 +1,44 @@
-import requests
+from openai import OpenAI
+from typing import Dict, List
+import logging
 
-API_KEY = "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"
-MODEL = "deepseek/deepseek-r1-distill-llama-70b:free"
+client = OpenAI(
+    api_key="sk-KZBayWeUNOHz0lGu1xOEVxVizGudZ5JF",
+    base_url="https://api.proxyapi.ru/openai/v1",
+)
 
+user_messages: Dict[int, List[dict]] = {}
 
-def is_pc_related(prompt: str) -> bool:
-    keywords = [
-        "пк",
-        "сборка",
-        "комплектующие",
-        "видеокарта",
-        "процессор",
-        "собери",
-        "игровой",
-        "офисный",
-        "железо",
-        "апгрейд",
-        "ssd",
-        "hdd",
-        "материнская плата",
-        "оперативка",
-        "блок питания",
-        "бюджет",
-    ]
-    prompt_lower = prompt.lower()
-    return any(word in prompt_lower for word in keywords)
+SYSTEM_PROMPT = {
+    "role": "system",
+    "content": (
+        "Ты ассистент, который отвечает только на вопросы, связанные с компьютерами, "
+        "сборкой ПК, комплектующими, апгрейдом, бюджетами, игровыми и офисными конфигурациями. "
+        "Если вопрос не по теме, politely откажись отвечать."
+    ),
+}
 
 
-def ask_openrouter(prompt: str) -> str:
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost",
-        "X-Title": "PC Config Assistant",
-    }
-    payload = {"model": MODEL, "messages": [{"role": "user", "content": prompt}]}
+def chat_with_gpt(user_input: str, user_id: int) -> str:
+    try:
+        if user_id not in user_messages:
+            user_messages[user_id] = [SYSTEM_PROMPT]
 
-    response = requests.post(url, json=payload, headers=headers, timeout=30)
+        user_messages[user_id].append({"role": "user", "content": user_input})
 
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"].strip()
-    else:
-        return "❌ Ошибка при обращении к ИИ."
+        chat_completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=user_messages[user_id]
+        )
+
+        response = chat_completion.choices[0].message.content
+        user_messages[user_id].append({"role": "assistant", "content": response})
+        return response
+
+    except Exception as e:
+        logging.exception("Ошибка при обращении к OpenAI:")
+        return "❌ Произошла ошибка при обработке запроса к ИИ."
 
 
-def handle_ai_request(prompt: str) -> str:
-    if is_pc_related(prompt):
-        return ask_openrouter(prompt)
-    else:
-        return "💡 Я помогаю только с выбором комплектующих и сборкой ПК. Попробуйте сформулировать вопрос иначе."
+def handle_ai_request(prompt: str, user_id: int) -> str:
+    return chat_with_gpt(prompt, user_id)
