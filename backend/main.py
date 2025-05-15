@@ -25,7 +25,6 @@ from auth_service import (
 )
 import datetime
 
-
 Base.metadata.create_all(bind=engine)
 Base1.metadata.create_all(bind=engine1)
 
@@ -63,43 +62,34 @@ async def me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
-# @app.get("/components", response_model=list[ComponentOut])
-# async def get_user_components(
-#     db: Session = Depends(get_db),
-#     current_user: UserOut = Depends(get_current_user),
-# ):
-#     components = db.query(Component).filter(Component.userid == current_user.id).all()
-
-#     if not components:
-#         raise HTTPException(status_code=404, detail="No components found for this user")
-
-#     return components
-
-
 @app.post("/ai", response_model=AIRequestResponse)
 async def create_ai_request(
     request: AIRequestCreate,
     db: Session = Depends(get_db),
     current_user: UserOut = Depends(get_current_user),
 ):
-    ai_response = handle_ai_request(request.query)
+    try:
+        ai_response = handle_ai_request(request.query, current_user.id)
 
-    db_request = AIRequestChat(
-        user_id=current_user.id,
-        request_text=request.query,
-        response_text=ai_response,
-        created_at=datetime.datetime.now(),
-    )
-    db.add(db_request)
-    db.commit()
-    db.refresh(db_request)
+        db_request = AIRequestChat(
+            user_id=current_user.id,
+            request_text=request.query,
+            response_text=ai_response,
+            created_at=datetime.datetime.now(),
+        )
+        db.add(db_request)
+        db.commit()
+        db.refresh(db_request)
 
-    return {
-        "id": current_user.id,
-        "query": request.query,
-        "response": ai_response,
-        "timestamp": datetime.datetime.now(),
-    }
+        return {
+            "id": current_user.id,
+            "query": request.query,
+            "response": ai_response,
+            "timestamp": datetime.datetime.now(),
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка сервера: {str(e)}")
 
 
 @app.get("/history", response_model=list[AIHistory])
@@ -123,12 +113,9 @@ def search_components(
     db: Session = Depends(get_db1),
 ):
     search_pattern = f"%{query}%"
-
     results = db.query(Component).filter(Component.name.ilike(search_pattern)).all()
-
     if not results:
         raise HTTPException(status_code=404, detail="Ничего не найдено")
-
     return results
 
 
@@ -138,16 +125,8 @@ async def create_build(
     db: Session = Depends(get_db),
     current_user: UserOut = Depends(get_current_user),
 ):
-    # Валидация компонентов
     valid_types = [
-        "cpu",
-        "gpu",
-        "motherboard",
-        "ram",
-        "storage",
-        "psu",
-        "cpucool",
-        "case",
+        "cpu", "gpu", "motherboard", "ram", "storage", "psu", "cpucool", "case"
     ]
     for component_type in build.components.keys():
         if component_type not in valid_types:
@@ -188,11 +167,7 @@ async def get_builds(
     current_user: UserOut = Depends(get_current_user),
 ):
     builds = db.query(Build).filter(Build.user_id == current_user.id).limit(20)
-
-    if not builds:
-        return HTTPException(status_code=404, detail="Builds not found")
-
-    return builds
+    return builds.all()
 
 
 @app.delete("/builds/{build_id}")
