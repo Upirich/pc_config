@@ -3,24 +3,28 @@
   height: calc(100vh - 120px);
   max-width: 1400px;
   margin: 0 auto;
-  background: #333;
+  background: var(--dark-2);
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar {
   width: 300px;
-  background: #444;
+  background: var(--dark-3);
   padding: 1.5rem;
-  border-right: 1px solid #555;
+  border-right: 1px solid var(--border);
   overflow-y: auto;
 }
 
 .sidebar h3 {
-  color: #4CAF50;
+  color: var(--accent-green);
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #555;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .message-history {
@@ -31,21 +35,24 @@
 
 .history-item {
   padding: 0.8rem;
-  background: #555;
+  background: var(--dark-2);
   border-radius: 5px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.25s ease;
   font-size: 0.9rem;
-  color: #ddd;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
 }
 
 .history-item:hover {
-  background: #666;
+  background: var(--dark-3);
+  color: var(--text-main);
 }
 
 .history-item.active {
-  background: #4CAF50;
+  background: var(--accent-green);
   color: white;
+  border-color: var(--accent-green);
 }
 
 .main-content {
@@ -53,33 +60,40 @@
   display: flex;
   flex-direction: column;
   padding: 2rem;
+  background: var(--dark-2);
 }
 
 .message-detail {
   flex: 1;
   overflow-y: auto;
   margin-bottom: 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-green) var(--dark-3);
 }
 
 .user-query, .ai-response {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: #444;
+  background: var(--dark-3);
   border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .user-query h4, .ai-response h4 {
-  color: #4CAF50;
+  color: var(--accent-green);
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .ai-response p {
   white-space: pre-line;
   line-height: 1.6;
+  color: var(--text-main);
 }
 
 .loading-text {
-  color: #aaa;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -90,12 +104,13 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  color: #ddd;
+  color: var(--text-secondary);
 }
 
 .welcome-message h2 {
-  color: #4CAF50;
+  color: var(--accent-green);
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .input-form {
@@ -107,29 +122,39 @@
 .input-form input {
   flex: 1;
   padding: 1rem;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 5px;
-  background: #444;
-  color: white;
+  background: var(--dark-3);
+  color: var(--text-main);
+  transition: border-color 0.25s ease;
+}
+
+.input-form input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
 }
 
 .input-form button {
   padding: 0 2rem;
-  background: #4CAF50;
+  background: var(--accent-green);
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.25s ease;
+  font-weight: 500;
 }
 
 .input-form button:hover {
-  background: #45a049;
+  background: #1b5e20;
+  transform: translateY(-1px);
 }
 
 .input-form button:disabled {
   background: #666;
   cursor: not-allowed;
+  transform: none;
 }
 
 .loading-indicator {
@@ -137,16 +162,17 @@
   align-items: center;
   gap: 10px;
   padding: 15px;
-  background: #f8f9fa;
+  background: var(--dark-3);
   border-radius: 8px;
+  color: var(--text-secondary);
 }
 
 .spinner {
   width: 20px;
   height: 20px;
-  border: 3px solid #f3f3f3;
+  border: 3px solid var(--border);
   border-radius: 50%;
-  border-top-color: #2196f3;
+  border-top-color: var(--accent-green);
   animation: spin 1s linear infinite;
 }
 
@@ -157,19 +183,46 @@
 
 .message-date {
   font-size: 0.8em;
-  color: #666;
+  color: var(--text-secondary);
   margin-top: 5px;
+  text-align: right;
 }
 
 .example-questions {
   margin-top: 20px;
   padding: 15px;
-  background: #f8f9ff;
+  background: var(--dark-3);
   border-radius: 8px;
-  color: black;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+.example-questions p {
+  color: var(--text-secondary);
+  margin-bottom: 10px;
 }
 
 .example-questions ul {
   padding-left: 20px;
   margin: 10px 0 0 0;
+  color: var(--text-secondary);
+}
+
+.example-questions li {
+  margin-bottom: 8px;
+  transition: color 0.25s ease;
+}
+
+.example-questions li:hover {
+  color: var(--accent-green);
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-detail > div {
+  animation: fadeIn 0.3s ease-out forwards;
 }
