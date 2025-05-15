@@ -1,29 +1,42 @@
 from openai import OpenAI
+from typing import List, Dict
+import logging
 
 client = OpenAI(
     api_key="sk-KZBayWeUNOHz0lGu1xOEVxVizGudZ5JF",
     base_url="https://api.proxyapi.ru/openai/v1",
 )
 
-messages = [
-    {"role": "system", "content": "Ты ассистент, который помогает только с вопросами по компьютерам, сборке ПК и выбору комплектующих. Пожалуйста, отвечай только на эти вопросы."}
-]
+user_messages: Dict[int, List[dict]] = {}
 
-def chat_with_gpt(user_input: str) -> str:
-    messages.append({"role": "user", "content": user_input})
-    chat_completion = client.chat.completions.create(model="gpt-4o", messages=messages)
+SYSTEM_PROMPT = {
+    "role": "system",
+    "content": (
+        "Ты ассистент, который помогает только с вопросами по компьютерам, сборке ПК и выбору комплектующих. "
+        "Если вопрос не относится к этой теме, вежливо откажись отвечать."
+    ),
+}
 
-    response = chat_completion.choices[0].message.content
-    messages.append({"role": "assistant", "content": response})
+def chat_with_gpt(user_input: str, user_id: int) -> str:
+    try:
+        if user_id not in user_messages:
+            user_messages[user_id] = [SYSTEM_PROMPT]
 
-    return response
+        user_messages[user_id].append({"role": "user", "content": user_input})
 
-def handle_ai_request(prompt: str) -> str:
-    return chat_with_gpt(prompt)
+        chat_completion = client.chat.completions.create(
+            model="gpt-4o",
+            messages=user_messages[user_id]
+        )
 
-while True:
-    user_input = input("Вы: ")
-    if user_input.lower() in ["выход", "exit"]:
-        break
-    response = handle_ai_request(user_input)
-    print("AI: " + response)
+        response = chat_completion.choices[0].message.content
+        user_messages[user_id].append({"role": "assistant", "content": response})
+
+        return response
+
+    except Exception as e:
+        logging.exception("Ошибка при обращении к OpenAI:")
+        return "❌ Произошла ошибка при обработке запроса к ИИ."
+
+def handle_ai_request(prompt: str, user_id: int) -> str:
+    return chat_with_gpt(prompt, user_id)
