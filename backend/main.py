@@ -127,7 +127,14 @@ async def create_build(
     current_user: UserOut = Depends(get_current_user),
 ):
     valid_types = [
-        "cpu", "gpu", "motherboard", "ram", "storage", "psu", "cpucool", "case"
+        "cpu",
+        "gpu",
+        "motherboard",
+        "ram",
+        "storage",
+        "psu",
+        "cpucool",
+        "case",
     ]
     for component_type in build.components.keys():
         if component_type not in valid_types:

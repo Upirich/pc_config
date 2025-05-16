@@ -1,13 +1,16 @@
 :root {
-  /* Цветовая палитра */
   --dark-1: #121212;
   --dark-2: #1a1a1a;
   --dark-3: #222222;
   --text-main: #f0f0f0;
   --text-secondary: #b0b0b0;
-  --accent-green: #2e7d32; /* Тёмно-зелёный */
-  --accent-red: #c62828; /* Тёмно-красный */
+  --accent-green: #2e7d32;
+  --accent-red: #c62828;
   --border: #333333;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 .app {

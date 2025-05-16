@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -14,13 +14,17 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       
       const { data } = await axios.get('http://localhost:8000/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(data);
     } catch (err) {
+      console.error('Auth check failed:', err);
       logout();
     } finally {
       setLoading(false);
@@ -30,7 +34,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (formData) => {
     const { data } = await axios.post('http://localhost:8000/register', formData);
     localStorage.setItem('token', data.access_token);
-    checkAuth();
+    await checkAuth();
   };
 
   const login = async (formData) => {
@@ -44,11 +48,28 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const isAuthenticated = !!user;
+
   return (
-    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      isAuthenticated,
+      register, 
+      login, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
 
 export default AuthContext;
