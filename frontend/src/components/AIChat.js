@@ -4,7 +4,7 @@ import axios from 'axios';
 import '../styles/ai.css';
 
 const AIChat = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
@@ -14,6 +14,9 @@ const AIChat = () => {
   const messagesEndRef = useRef(null);
 
   const toggleChat = () => {
+    if (!isAuthenticated) {
+      return;
+    }
     setIsOpen(!isOpen);
     setShowHistoryPanel(false);
   };
@@ -41,6 +44,8 @@ const AIChat = () => {
   });
 
   const fetchHistory = async () => {
+    if (!isAuthenticated) return;
+    
     try {
       const token = localStorage.getItem('token');
       const { data } = await axios.get('http://localhost:8000/history', {
@@ -53,15 +58,26 @@ const AIChat = () => {
   };
 
   const loadHistoryItem = (historyItem) => {
+    if (!isAuthenticated) return;
+    
     setMessages(historyItem.messages);
     setShowHistoryPanel(false);
     scrollToBottom();
   };
 
   const handleSendMessage = async (endpoint) => {
-    if (!input.trim()) return;
+    if (!isAuthenticated || !input.trim()) return;
 
     const token = localStorage.getItem('token');
+    if (!token) {
+      setMessages([...messages, { 
+        text: 'Ошибка: Требуется авторизация', 
+        sender: 'ai',
+        isError: true 
+      }]);
+      return;
+    }
+
     const userMessage = { text: input, sender: 'user' };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -70,12 +86,25 @@ const AIChat = () => {
 
     try {
       const { data } = await axios.post(
-        `http://localhost:8000/ai/${endpoint}`,
-        { prompt: input },
+        `http://localhost:8000/ai${endpoint}`,
+        { query: input },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const aiMessage = { text: data.response, sender: 'ai' };
+      let aiMessage;
+      if (endpoint === '_cot') {
+        // Форматируем ответ для Chain-of-Thought
+        aiMessage = {
+          text: `Мысли: ${data.thoughts.map(t => t.content).join('\n')}
+                 \nВыбранные комплектующие: ${data.choosen_complect.map(c => c.name).join(', ')}
+                 \n\nФинальный ответ: ${data.final_answer}`,
+          sender: 'ai'
+        };
+      } else {
+        // Обычный ответ
+        aiMessage = { text: data.response, sender: 'ai' };
+      }
+
       setMessages([...newMessages, aiMessage]);
       await fetchHistory();
     } catch (error) {
@@ -148,12 +177,17 @@ const AIChat = () => {
               <div className="ai-chat-tools">
                 <button 
                   className="tool-button" 
-                  onClick={() => setShowHistoryPanel(true)}
+                  onClick={() => isAuthenticated && setShowHistoryPanel(true)}
                   title="История запросов"
+                  disabled={!isAuthenticated}
                 >
                   🕒
                 </button>
-                <button className="ai-chat-close" onClick={toggleChat}>
+                <button 
+                  className="ai-chat-close" 
+                  onClick={toggleChat}
+                  disabled={!isAuthenticated}
+                >
                   ×
                 </button>
               </div>
@@ -162,7 +196,7 @@ const AIChat = () => {
             <div className="ai-chat-messages">
               {messages.length === 0 && !isLoading && (
                 <div className="message ai-message">
-                  Задайте вопрос ИИ-ассистенту
+                  {user ? `Добро пожаловать, ${user.username}! Задайте вопрос ИИ-ассистенту` : 'Задайте вопрос ИИ-ассистенту'}
                 </div>
               )}
               
@@ -190,25 +224,26 @@ const AIChat = () => {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Введите ваш запрос..."
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
+                  if (e.key === 'Enter' && !e.shiftKey && isAuthenticated) {
                     e.preventDefault();
                     handleSendMessage('');
                   }
                 }}
+                disabled={!isAuthenticated}
               />
               
               <div className="ai-chat-buttons">
                 <button 
                   className="ai-chat-button secondary"
                   onClick={() => handleSendMessage('_cot')}
-                  disabled={isLoading || !input.trim()}
+                  disabled={!isAuthenticated || isLoading || !input.trim()}
                 >
-                  Chain-of-thought
+                  Подгрузить комплектующие
                 </button>
                 <button 
                   className="ai-chat-button primary"
                   onClick={() => handleSendMessage('')}
-                  disabled={isLoading || !input.trim()}
+                  disabled={!isAuthenticated || isLoading || !input.trim()}
                 >
                   Отправить
                 </button>

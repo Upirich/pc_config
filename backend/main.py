@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ai_service import handle_ai_request
+from ai_service import handle_ai_request, handle_ai_cot_request
 from schemas import (
     UserCreate,
     Token,
@@ -12,6 +12,7 @@ from schemas import (
     AIRequestResponse,
     BuildCreate,
     BuildOut,
+    FinalAnswer,
 )
 from models import Component, AIRequestChat, Build
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +25,6 @@ from auth_service import (
     get_current_user,
 )
 import datetime
-from ai_service import chat_with_cot
 
 Base.metadata.create_all(bind=engine)
 Base1.metadata.create_all(bind=engine1)
@@ -93,19 +93,22 @@ async def create_ai_request(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка сервера: {str(e)}")
 
+
 @app.post("/ai_cot", response_model=FinalAnswer)
 async def ai_chain_of_thought(
     request: AIRequestCreate,
-    db1: Session = Depends(get_db1), 
+    db1: Session = Depends(get_db1),
     current_user: UserOut = Depends(get_current_user),
 ):
     try:
-        result = chat_with_cot(request.query, db1)
+        result = handle_ai_cot_request(request.query, db1)
 
         return result
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chain of Thought ошибка: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Chain of Thought ошибка: {str(e)}"
+        )
 
 
 @app.get("/history", response_model=list[AIHistory])

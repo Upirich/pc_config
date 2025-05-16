@@ -9,7 +9,6 @@ const PartCard = ({ part }) => {
         <span className="part-price">{part.price.toFixed(2)} Рублей</span>
       </div>
       <span className="part-desc">{part.description}</span>
-      <button className="add-to-build">Add to Build</button>
     </div>
   );
 };

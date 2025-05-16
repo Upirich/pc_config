@@ -34,12 +34,6 @@ const ProfilePage = () => {
         >
           Мои Сборки
         </button>
-        <button
-          onClick={() => navigate('/ai-assistant')}
-          className="action-btn"
-        >
-          ИИ ассистент
-        </button>
       </div>
     </div>
   );

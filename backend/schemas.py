@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 import datetime
+from typing import List
 
 
 class UserCreate(BaseModel):
@@ -76,3 +77,22 @@ class BuildOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class Complect(BaseModel):
+    id: int
+    type: str
+    name: str
+    price: int
+    description: str
+
+
+class Think(BaseModel):
+    explanation: str
+    output: str
+
+
+class FinalAnswer(BaseModel):
+    thoughts: List[Think]
+    choosen_complect: List[Complect]
+    final_answer: str

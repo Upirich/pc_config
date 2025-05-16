@@ -3,30 +3,14 @@ from typing import Dict, List
 import logging
 from sqlalchemy.orm import Session
 from fastapi import Depends
-from pydantic import BaseModel
-from db1 import get_db1 
-from models import Component 
+from db1 import get_db1
+from models import Component
+from schemas import Complect, Think, FinalAnswer
 
 client = OpenAI(
     api_key="sk-KZBayWeUNOHz0lGu1xOEVxVizGudZ5JF",
     base_url="https://api.proxyapi.ru/openai/v1",
 )
-
-class Complect(BaseModel):
-    id: int
-    type: str
-    name: str
-    price: int
-    description: str
-
-class Think(BaseModel):
-    explanation: str
-    output: str
-
-class FinalAnswer(BaseModel):
-    thoughts: List[Think]
-    choosen_complect: List[Complect]
-    final_answer: str
 
 
 def get_complects_from_db(db: Session) -> List[Complect]:
@@ -104,6 +88,7 @@ SYSTEM_PROMPT = {
     ),
 }
 
+
 def chat_with_gpt(user_input: str, user_id: int) -> str:
     try:
         if user_id not in user_messages:
@@ -112,8 +97,7 @@ def chat_with_gpt(user_input: str, user_id: int) -> str:
         user_messages[user_id].append({"role": "user", "content": user_input})
 
         chat_completion = client.chat.completions.create(
-            model="gpt-4o",
-            messages=user_messages[user_id]
+            model="gpt-4o", messages=user_messages[user_id]
         )
 
         response = chat_completion.choices[0].message.content
