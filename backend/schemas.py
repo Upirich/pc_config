@@ -80,3 +80,18 @@ class FinalAnswer(BaseModel):
     thoughts: list[Think]
     choosen_complect: list[Complect]
     final_answer: str
+
+
+class BuildCreate(BaseModel):
+    name: str
+    components: dict
+
+
+class BuildOut(BaseModel):
+    id: int
+    name: str
+    components: dict
+    user_id: int
+
+    class Config:
+        from_attributes = True
