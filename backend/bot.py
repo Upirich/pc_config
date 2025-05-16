@@ -1,13 +1,56 @@
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
+from typing import Union
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from sqlalchemy import select
-from database import AsyncSessionLocal
+from backend.database import AsyncSessionLocal
 from backend.auth_tg import authenticate_user
 from models import User, AIRequestChat
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+import os
+from aiogram.types import InputFile, BufferedInputFile
+import requests
+
+
+class YandexSpeechKit:
+    def __init__(self, api_key, folder_id):
+        self.api_key = api_key
+        self.folder_id = folder_id
+        self.url = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize"
+
+    def synthesize(self, text, voice="alena", format="oggopus"):
+        headers = {"Authorization": f"Api-Key {self.api_key}"}
+        data = {
+            "text": text,
+            "voice": voice,
+            "folderId": self.folder_id,
+            "format": format
+        }
+        response = requests.post(self.url, headers=headers, data=data)
+        return response.content if response.status_code == 200 else None
+
+
+#SPEECHKIT_API_KEY = "AQVN1-bH8__4Zl61UV8cCMquwlivOcF9rveueJBe"
+#FOLDER_ID = "b1g4nqubucfntfi07tr9"  # Если используется
+VOICE = "alena"  # Голос Алисы
+
+speechkit = YandexSpeechKit(api_key="AQVN1-bH8__4Zl61UV8cCMquwlivOcF9rveueJBe", folder_id="b1g4nqubucfntfi07tr9")
+
+
+async def text_to_speech(text: str, chat_id: int) -> str:
+    """Преобразует текст в аудио и возвращает путь к файлу"""
+    try:
+        audio = speechkit.synthesize(text=text, voice=VOICE, format="oggopus")
+        filename = f"voice_{chat_id}.ogg"
+        with open(filename, "wb") as f:
+            f.write(audio)
+        return filename
+    except Exception as e:
+        print(f"Ошибка синтеза речи: {e}")
+        return None
 
 
 bot = Bot(token='7127595559:AAFCh9LzAiNJmehxIezib9NJFfiQnWUJIzA')
@@ -114,12 +157,8 @@ async def process_password(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == "📜 История запросов")
 async def cmd_history(message: types.Message):
-    # Проверяем авторизацию через глобальное хранилище
     if message.from_user.id not in user_data_store:
-        await message.answer(
-            "❌ Сначала авторизуйтесь",
-            reply_markup=auth_keyboard
-        )
+        await message.answer("❌ Сначала авторизуйтесь", reply_markup=auth_keyboard)
         return
     
     user_id = user_data_store[message.from_user.id]["user_id"]
@@ -129,35 +168,100 @@ async def cmd_history(message: types.Message):
             history = await session.execute(
                 select(AIRequestChat)
                 .where(AIRequestChat.user_id == user_id)
-                .order_by(AIRequestChat.created_at)
+                .order_by(AIRequestChat.created_at.desc())
                 .limit(10)
             )
             history_items = history.scalars().all()
         
         if not history_items:
-            await message.answer(
-                "📭 История запросов пуста",
-                reply_markup=main_keyboard
-            )
+            await message.answer("📭 История запросов пуста", reply_markup=main_keyboard)
             return
         
-        response = ["📚 Ваша история запросов:\n"]
+        response = ["📚 Последние 10 запросов:\n"]
         for item in history_items:
             response.append(
-                f"🕒 {item.created_at}\n"
-                f"❓ Вопрос: {item.request_text[:100]}...\n"
-                f"💡 Ответ: {item.response_text[:100]}...\n"
+                f"🕒 {item.created_at.strftime('%d.%m.%Y %H:%M')}\n"
+                f"❓ Вопрос: {item.request_text[:100]}{'...' if len(item.request_text) > 100 else ''}\n"
+                f"💡 Ответ: {item.response_text[:100]}{'...' if len(item.response_text) > 100 else ''}\n"
                 f"────────────────────"
             )
         
-        await message.answer("\n".join(response))
+        # Добавляем кнопку "Прослушать"
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🔊 Прослушать последний ответ", callback_data="play_last")]
+        ])
+        
+        await message.answer(
+            "\n".join(response),
+            reply_markup=keyboard
+        )
         
     except Exception as e:
         print(f"Ошибка получения истории: {e}")
-        await message.answer(
-            "⚠️ Не удалось загрузить историю",
-            reply_markup=main_keyboard
-        )
+        await message.answer("⚠️ Не удалось загрузить историю", reply_markup=main_keyboard)
+
+# Обработчик кнопки "Прослушать"
+@dp.callback_query(F.data == "play_last")
+async def play_last_answer(callback: types.CallbackQuery):
+    try:
+        if callback.from_user.id not in user_data_store:
+            await callback.answer("❌ Требуется авторизация", show_alert=True)
+            return
+            
+        user_id = user_data_store[callback.from_user.id]["user_id"]
+        
+        async with AsyncSessionLocal() as session:
+            history = await session.execute(
+                select(AIRequestChat)
+                .where(AIRequestChat.user_id == user_id)
+                .order_by(AIRequestChat.created_at.desc())
+                .limit(10)  # Ограничиваем количество для озвучки
+            )
+            history_items = history.scalars().all()
+            
+            if not history_items:
+                await callback.answer("❌ Нет истории для озвучки", show_alert=True)
+                return
+                
+            # Формируем полный текст для озвучки
+            full_text = "Ваша история запросов:\n\n"
+            for i, item in enumerate(reversed(history_items), 1):  # Обратный порядок для хронологии
+                full_text += (
+                    f"Запрос {i} от {item.created_at.strftime('%d.%m.%Y %H:%M')}:\n"
+                    f"Вопрос: {item.request_text}\n"
+                    f"Ответ: {item.response_text}\n\n"
+                )
+            
+            # Ограничиваем длину текста (максимум 5000 символов для SpeechKit)
+            full_text = full_text[:5000]
+            
+            # Синтезируем речь
+            audio_data = await text_to_speech_bytes(full_text)
+            
+            if audio_data:
+                voice_message = BufferedInputFile(
+                    file=audio_data,
+                    filename="history.ogg"
+                )
+                await callback.message.answer_voice(
+                    voice=voice_message,
+                    caption="История ваших запросов"
+                )
+            else:
+                await callback.answer("⚠️ Ошибка синтеза речи", show_alert=True)
+                
+    except Exception as e:
+        print(f"Ошибка озвучки истории: {e}")
+        await callback.answer("⚠️ Произошла ошибка", show_alert=True)
+
+async def text_to_speech_bytes(text: str) -> Union[bytes, None]:
+    try:
+        audio = speechkit.synthesize(text=text, voice="alena", format="oggopus")
+        return audio
+    except Exception as e:
+        print(f"Ошибка синтеза речи: {e}")
+        return None
+
 
 @dp.message(F.text == "🚪 Выйти")
 async def cmd_logout(message: types.Message):
