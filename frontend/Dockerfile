@@ -1,17 +1,12 @@
-FROM node:20-alpine
+FROM node:alpine
 
-WORKDIR /app
+WORKDIR /usr/app
 
-COPY package.json package-lock.json ./
-RUN npm ci --silent
+COPY package.json .
+RUN npm install
+
+RUN mkdir node_modules/.cache && chmod -R 777 node_modules/.cache
 
 COPY . .
 
-RUN chown -R node:node /app/node_modules && \
-    chmod -R 755 /app/node_modules
-
-USER node
-
-RUN npm run build
-
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]
