@@ -1,11 +1,17 @@
-FROM node:18 as build
+FROM node:20-alpine
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+
+COPY package.json package-lock.json ./
+RUN npm ci --silent
+
 COPY . .
+
+RUN chown -R node:node /app/node_modules && \
+    chmod -R 755 /app/node_modules
+
+USER node
+
 RUN npm run build
 
-FROM nginx:alpine
-COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/build /usr/share/nginx/html
+CMD ["npm", "start"]
