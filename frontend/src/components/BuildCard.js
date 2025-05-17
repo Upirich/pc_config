@@ -16,6 +16,7 @@ const BuildCard = ({ build }) => {
               {part.name} - {part.price.toFixed(2)} ₽
             </li>
           ))}
+          <a href={build.ref}>Купить здесь</a>
         </ul>
       </div>
     </div>
