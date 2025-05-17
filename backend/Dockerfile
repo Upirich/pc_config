@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 
-CMD sh -c "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 & python main_tg.py"
+CMD sh -c "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 && python main_tg.py"
