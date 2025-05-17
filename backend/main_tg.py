@@ -6,6 +6,7 @@ async def main():
     """Запуск бота"""
     await dp.start_polling(bot)
 
+
 if __name__ == "__main__":
     asyncio.run(main())
 # установите pip install aiogram passlib sqlalchemy asyncio python-dotenv
